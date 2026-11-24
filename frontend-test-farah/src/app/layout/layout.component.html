@@ -1,0 +1,167 @@
+<div class="app-shell">
+
+  <header class="topbar">
+    <button class="btn btn-ghost btn-icon burger" (click)="menuOuvert.set(!menuOuvert())" aria-label="Ouvrir le menu">
+      <span class="mi">{{ menuOuvert() ? 'close' : 'menu' }}</span>
+    </button>
+
+    <a routerLink="/dashboard" class="logo">
+      <div class="logo-icon">L</div>
+      <span class="logo-text">LIM<span>TIC</span></span>
+    </a>
+
+    <form class="search-wrap" (ngSubmit)="rechercher()">
+      <span class="mi">auto_awesome</span>
+      <input type="search" name="q" [(ngModel)]="recherche"
+             placeholder="Recherche IA : « segmentation d'images médicales »…" aria-label="Recherche sémantique" />
+      <kbd>↵</kbd>
+    </form>
+
+    <div class="topbar-right">
+      @if (ia.status(); as s) {
+        <span class="badge-ia hide-sm" [class.off]="!s.geminiConfigure"
+              [title]="s.geminiConfigure ? 'Modèle : ' + s.modele : 'Définissez GEMINI_API_KEY côté backend'">
+          <span class="dot"></span>
+          {{ s.geminiConfigure ? 'Gemini actif' : 'Gemini non configuré' }}
+        </span>
+      } @else {
+        <span class="badge-ia off hide-sm" title="Le backend ne répond pas"><span class="dot"></span>API hors ligne</span>
+      }
+      <a routerLink="/utilisateur/profil" class="user-chip" title="Mon profil">{{ auth.initials() }}</a>
+      <button class="btn btn-ghost btn-icon" (click)="logout()" title="Déconnexion" aria-label="Déconnexion">
+        <span class="mi">logout</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="shell-body">
+    @if (menuOuvert()) { <div class="backdrop" (click)="menuOuvert.set(false)"></div> }
+
+    <aside class="sidebar" [class.open]="menuOuvert()">
+      <nav class="nav">
+
+        <div class="nav-section">
+          <span class="nav-label">Général</span>
+          <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+            <span class="mi">space_dashboard</span> Tableau de bord
+          </a>
+          <a routerLink="/utilisateur/chercheurs" routerLinkActive="active" class="nav-item">
+            <span class="mi">groups</span> Chercheurs
+          </a>
+          <a routerLink="/utilisateur/publications" routerLinkActive="active" class="nav-item">
+            <span class="mi">article</span> Publications
+          </a>
+          <a routerLink="/utilisateur/domaines" routerLinkActive="active" class="nav-item">
+            <span class="mi">category</span> Axes de recherche
+          </a>
+          @if (auth.currentUser()?.chercheurId) {
+            <a routerLink="/utilisateur/ma-fiche" routerLinkActive="active" class="nav-item">
+              <span class="mi">badge</span> Ma page chercheur
+            </a>
+          }
+          <a routerLink="/" class="nav-item" target="_blank">
+            <span class="mi">public</span> Site public
+          </a>
+        </div>
+
+        @if (auth.accesRapport()) {
+          <div class="nav-section">
+            <span class="nav-label">Rapport d'activité</span>
+            <a routerLink="/rapport" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
+              <span class="mi">assignment</span> Campagne & récapitulatif
+            </a>
+            <a routerLink="/rapport/mon-activite" routerLinkActive="active" class="nav-item">
+              <span class="mi">edit_note</span> Mon activité
+            </a>
+            <a routerLink="/rapport/saisie/publications" routerLinkActive="active" class="nav-item">
+              <span class="mi">fact_check</span> Saisie des formulaires
+            </a>
+            @if (auth.estAdmin()) {
+              <a routerLink="/rapport/controles" routerLinkActive="active" class="nav-item">
+                <span class="mi">rule</span> Contrôles
+              </a>
+              <a routerLink="/rapport/apercu" routerLinkActive="active" class="nav-item">
+                <span class="mi">preview</span> Aperçu
+              </a>
+              <a routerLink="/rapport/rapports" routerLinkActive="active" class="nav-item">
+                <span class="mi">picture_as_pdf</span> Rapports
+              </a>
+              <a routerLink="/rapport/parametres" routerLinkActive="active" class="nav-item">
+                <span class="mi">tune</span> Paramètres
+              </a>
+              <a routerLink="/rapport/journal" routerLinkActive="active" class="nav-item">
+                <span class="mi">history</span> Journal d'audit
+              </a>
+            }
+          </div>
+        }
+
+        <div class="nav-section">
+          <span class="nav-label">Intelligence artificielle</span>
+          <a routerLink="/ia/chat" routerLinkActive="active" class="nav-item">
+            <span class="mi">forum</span> Assistant IA <span class="ia-pill">Gemini</span>
+          </a>
+          <a routerLink="/ia/recherche" routerLinkActive="active" class="nav-item">
+            <span class="mi">manage_search</span> Recherche sémantique
+          </a>
+          <a routerLink="/ia/recommandations" routerLinkActive="active" class="nav-item">
+            <span class="mi">hub</span> Recommandations
+          </a>
+          <a routerLink="/ia/outils" routerLinkActive="active" class="nav-item">
+            <span class="mi">auto_awesome</span> Résumé & mots-clés
+          </a>
+          <a routerLink="/ia/analytics" routerLinkActive="active" class="nav-item">
+            <span class="mi">insights</span> Analytics & tendances
+          </a>
+        </div>
+
+        @if (auth.hasRole(['ADMIN', 'MODERATEUR'])) {
+          <div class="nav-section">
+            <span class="nav-label">Administration</span>
+            @if (auth.hasRole(['ADMIN'])) {
+              <a routerLink="/admin/chercheurs" routerLinkActive="active" class="nav-item">
+                <span class="mi">manage_accounts</span> Gestion chercheurs
+              </a>
+              <a routerLink="/admin/publications" routerLinkActive="active" class="nav-item">
+                <span class="mi">post_add</span> Gestion publications
+              </a>
+              <a routerLink="/admin/domaines" routerLinkActive="active" class="nav-item">
+                <span class="mi">label</span> Gestion des axes
+              </a>
+              <a routerLink="/admin/evenements" routerLinkActive="active" class="nav-item">
+                <span class="mi">event</span> Événements
+              </a>
+              <a routerLink="/admin/site" routerLinkActive="active" class="nav-item">
+                <span class="mi">web</span> Paramètres du site
+              </a>
+              <a routerLink="/admin/messages" routerLinkActive="active" class="nav-item">
+                <span class="mi">mail</span> Messages de contact
+              </a>
+              <a routerLink="/admin/comptes" routerLinkActive="active" class="nav-item">
+                <span class="mi">admin_panel_settings</span> Comptes & rôles
+              </a>
+            }
+            <a routerLink="/moderateur/contenu" routerLinkActive="active" class="nav-item">
+              <span class="mi">edit_note</span> Contenu accueil
+            </a>
+          </div>
+        }
+      </nav>
+
+      <a routerLink="/utilisateur/profil" class="sidebar-footer">
+        <div class="u-avatar">{{ auth.initials() }}</div>
+        <div class="u-info">
+          <span class="u-name">{{ auth.currentUser()?.prenom }} {{ auth.currentUser()?.nom }}</span>
+          <span class="u-role">{{ roleLabels[auth.currentUser()?.role ?? 'UTILISATEUR'] }}</span>
+        </div>
+      </a>
+    </aside>
+
+    <main class="main-content">
+      <div class="main-inner">
+        <router-outlet />
+      </div>
+    </main>
+  </div>
+
+</div>

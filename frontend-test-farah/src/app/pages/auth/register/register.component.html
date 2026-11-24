@@ -1,0 +1,46 @@
+<div class="auth-page">
+  <div class="auth-card fade-up">
+    <a routerLink="/" class="auth-logo logo">
+      <span class="plate-auth"><img src="logos/limtic.png" alt="LIMTIC" height="40" /></span>
+      <h1 class="auth-title">Créer un compte</h1>
+      <p class="auth-sub">Rejoindre la plateforme du LIMTIC</p>
+    </a>
+
+    @if (error()) {
+      <div class="alert alert-error" role="alert"><span class="mi sm">error</span> {{ error() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="prenom">Prénom</label>
+          <input id="prenom" class="form-control" type="text" formControlName="prenom" autocomplete="given-name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="nom">Nom</label>
+          <input id="nom" class="form-control" type="text" formControlName="nom" autocomplete="family-name" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="email">E-mail</label>
+        <input id="email" class="form-control" type="email" formControlName="email" placeholder="vous@exemple.com" autocomplete="email" />
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <div class="form-error">Adresse e-mail invalide.</div>
+        }
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Mot de passe</label>
+        <input id="password" class="form-control" type="password" formControlName="password" placeholder="6 caractères minimum" autocomplete="new-password" />
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <div class="form-error">Le mot de passe doit contenir au moins 6 caractères.</div>
+        }
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg" [disabled]="loading()">
+        @if (loading()) { Inscription… } @else { Créer mon compte }
+      </button>
+      <p class="form-hint" style="text-align:center;margin-top:10px">Les nouveaux comptes ont le rôle « Utilisateur ». Un administrateur peut ensuite changer le rôle.</p>
+    </form>
+
+    <p class="auth-foot">Déjà un compte ? <a routerLink="/auth/login">Se connecter</a></p>
+  </div>
+</div>

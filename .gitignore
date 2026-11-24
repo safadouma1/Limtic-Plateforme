@@ -1,0 +1,26 @@
+# Dépendances et builds
+node_modules/
+dist/
+.angular/
+target/
+out-tsc/
+
+# Base H2 locale et fichiers générés à l'exécution
+backend/data/
+data/
+*.mv.db
+*.trace.db
+*.log
+
+# Secrets : ne jamais committer de vraie clé
+.env
+.env.local
+*.env
+!.env.example
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

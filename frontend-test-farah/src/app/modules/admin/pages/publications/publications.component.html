@@ -1,0 +1,181 @@
+<div class="page-head">
+  <div>
+    <h1 class="page-title">Gestion des publications</h1>
+    <p class="page-subtitle">Saisie directe par l'administrateur (publiée immédiatement). Les déclarations des chercheurs suivent le circuit brouillon → soumis → validé dans <a routerLink="/rapport/saisie/publications" style="color:var(--accent)">Rapport d'activité → Publications</a>.</p>
+  </div>
+  @if (!formOuvert()) {
+    <button class="btn btn-primary" (click)="ouvrir()"><span class="mi sm">add</span> Nouvelle publication</button>
+  }
+</div>
+
+@if (error()) { <div class="alert alert-error"><span class="mi sm">error</span> {{ error() }}</div> }
+@if (info()) { <div class="alert alert-success"><span class="mi sm">check_circle</span> {{ info() }}</div> }
+
+@if (formOuvert()) {
+  <div class="card card-body mb-24 fade-up">
+    <div class="row mb-16" style="justify-content:space-between">
+      <div class="card-title">{{ editId() ? 'Modifier la publication' : 'Nouvelle publication' }}</div>
+      <button class="btn btn-ghost btn-icon" (click)="fermer()" aria-label="Fermer"><span class="mi sm">close</span></button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="titre">Titre *</label>
+        <input id="titre" class="form-control" formControlName="titre" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="type">Type *</label>
+          <select id="type" class="form-control" formControlName="type">
+            @for (t of types; track t[0]) { <option [value]="t[0]">{{ t[1] }}</option> }
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="venue">{{ form.value.type === 'ARTICLE_JOURNAL' ? 'Journal' : form.value.type === 'CHAPITRE' ? "Titre de l'ouvrage" : form.value.type === 'RAPPORT_TECHNIQUE' ? 'Série / numéro de rapport' : 'Conférence' }}</label>
+          <input id="venue" class="form-control" formControlName="venue" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="auteursTexte">Liste complète des auteurs (internes et externes, dans l'ordre)</label>
+        <input id="auteursTexte" class="form-control" formControlName="auteursTexte" placeholder="Nom1 Prénom1, Nom2 Prénom2…" />
+      </div>
+      @switch (form.value.type) {
+        @case ('ARTICLE_JOURNAL') {
+          <div class="form-row3">
+            <div class="form-group"><label class="form-label" for="vol">Volume</label><input id="vol" class="form-control" formControlName="volume" /></div>
+            <div class="form-group"><label class="form-label" for="num">Numéro</label><input id="num" class="form-control" formControlName="numero" /></div>
+            <div class="form-group"><label class="form-label" for="pg">Pages</label><input id="pg" class="form-control" formControlName="pages" placeholder="12-25" /></div>
+          </div>
+        }
+        @case ('CONFERENCE_INTERNATIONALE') {
+          <div class="form-row"><div class="form-group"><label class="form-label" for="lieu">Lieu</label><input id="lieu" class="form-control" formControlName="lieu" /></div>
+            <div class="form-group"><label class="form-label" for="pays">Pays</label><input id="pays" class="form-control" formControlName="pays" /></div></div>
+        }
+        @case ('CONFERENCE_NATIONALE') {
+          <div class="form-row"><div class="form-group"><label class="form-label" for="lieu">Lieu</label><input id="lieu" class="form-control" formControlName="lieu" /></div>
+            <div class="form-group"><label class="form-label" for="comite">Comité d'organisation</label><input id="comite" class="form-control" formControlName="comiteOrganisation" /></div></div>
+        }
+        @case ('CHAPITRE') {
+          <div class="form-row3"><div class="form-group"><label class="form-label" for="ed">Éditeur</label><input id="ed" class="form-control" formControlName="editeur" /></div>
+            <div class="form-group"><label class="form-label" for="isbn">ISBN</label><input id="isbn" class="form-control" formControlName="isbn" /></div>
+            <div class="form-group"><label class="form-label" for="pg">Pages</label><input id="pg" class="form-control" formControlName="pages" /></div></div>
+        }
+        @case ('RAPPORT_TECHNIQUE') {
+          <div class="form-row"><div class="form-group"><label class="form-label" for="inst">Institution</label><input id="inst" class="form-control" formControlName="institution" /></div>
+            <div class="form-group"><label class="form-label" for="num">Numéro du rapport</label><input id="num" class="form-control" formControlName="numero" /></div></div>
+        }
+      }
+      <fieldset class="clas">
+        <legend class="form-label">Classement de la venue</legend>
+        <div class="form-row3">
+          <div class="form-group"><label class="form-label" for="src">Source</label>
+            <select id="src" class="form-control" formControlName="sourceClassement"><option [ngValue]="null">—</option>
+              @for (s of sources; track s) { <option [ngValue]="s">{{ s }}</option> }</select></div>
+          <div class="form-group"><label class="form-label" for="cl">Classement</label>
+            <input id="cl" class="form-control" formControlName="classement" list="classements" placeholder="Q1, A*…" />
+            <datalist id="classements">@for (c of classements[form.value.sourceClassement || 'AUTRE']; track c) { <option [value]="c"></option> }</datalist></div>
+          <div class="form-group"><label class="form-label">Aperçu</label><div style="padding-top:8px"><app-classement [classement]="form.value.classement" [facteurImpact]="form.value.facteurImpact" /></div></div>
+        </div>
+        <div class="form-row3">
+          <div class="form-group"><label class="form-label" for="if">Facteur d'impact (IF)</label><input id="if" type="number" step="0.001" min="0" class="form-control" formControlName="facteurImpact" /></div>
+          <div class="form-group"><label class="form-label" for="snip">SNIP</label><input id="snip" type="number" step="0.001" min="0" class="form-control" formControlName="snip" /></div>
+          <div class="form-group"><label class="form-label" for="cit">Citations</label><input id="cit" type="number" min="0" class="form-control" formControlName="citations" /></div>
+        </div>
+      </fieldset>
+      <div class="form-group">
+        <label class="form-label" for="resume">Résumé (abstract)</label>
+        <textarea id="resume" class="form-control" formControlName="resume" rows="5"></textarea>
+      </div>
+      <div class="form-group">
+        <div class="row" style="justify-content:space-between;margin-bottom:6px">
+          <label class="form-label" for="mots" style="margin:0">Mots-clés (séparés par des virgules)</label>
+          <button type="button" class="btn btn-ia btn-sm" (click)="genererMotsCles()" [disabled]="iaKw()">
+            @if (iaKw()) { <span class="mi sm spin">autorenew</span> Génération… } @else { <span class="mi sm">auto_awesome</span> Générer avec Gemini }
+          </button>
+        </div>
+        <input id="mots" class="form-control" formControlName="motsCles" placeholder="deep learning, NLP, classification" />
+        @if (iaErr()) { <div class="form-error">{{ iaErr() }}</div> }
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="annee">Année</label>
+          <input id="annee" class="form-control" type="number" formControlName="annee" min="1900" max="2100" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="domaine">Domaine</label>
+          <select id="domaine" class="form-control" formControlName="domaineId">
+            <option [ngValue]="null">— Aucun —</option>
+            @for (d of domaines(); track d.id) { <option [ngValue]="d.id">{{ d.nom }}</option> }
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="doi">DOI</label>
+          <input id="doi" class="form-control" formControlName="doi" placeholder="10.1000/xyz123" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pdf">Lien externe (URL)</label>
+          <input id="pdf" class="form-control" type="url" formControlName="pdfUrl" placeholder="https://…" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fichier PDF</label>
+        <div class="row">
+          <app-depot libelle="Déposer le PDF" icone="picture_as_pdf" accept="application/pdf" (deposes)="form.patchValue({ pdfMediaId: $event[0].id })" />
+          @if (form.value.pdfMediaId) {
+            <a class="btn btn-ghost btn-sm" [href]="site.url('/api/media/' + form.value.pdfMediaId)" target="_blank"><span class="mi sm">visibility</span> Aperçu du PDF</a>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="form.patchValue({ pdfMediaId: null })">Retirer</button>
+          }
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="auteurs">Auteurs</label>
+        <select id="auteurs" class="form-control" multiple formControlName="chercheurIds">
+          @for (c of chercheurs(); track c.id) { <option [ngValue]="c.id">{{ c.prenom }} {{ c.nom }} — {{ c.etablissement }}</option> }
+        </select>
+        <div class="form-hint">Ctrl/Cmd + clic pour en sélectionner plusieurs. @if (!chercheurs().length) { <a routerLink="/admin/chercheurs/nouveau" style="color:var(--accent)">Ajouter un chercheur</a> }</div>
+      </div>
+      <div class="row">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) { Enregistrement… } @else { {{ editId() ? 'Mettre à jour' : 'Créer la publication' }} }
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="fermer()">Annuler</button>
+      </div>
+    </form>
+  </div>
+}
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Publications ({{ filtrees().length }})</span>
+    <div class="search-input" style="width:260px;max-width:100%">
+      <span class="mi">search</span>
+      <input class="form-control" type="search" placeholder="Titre ou mot-clé…" [ngModel]="q()" (ngModelChange)="q.set($event)" />
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Titre</th><th>Type</th><th>Classement</th><th>Domaine</th><th>Année</th><th></th></tr></thead>
+      <tbody>
+        @for (p of filtrees(); track p.id) {
+          <tr>
+            <td style="max-width:420px"><a [routerLink]="['/utilisateur/publications', p.id]" style="font-weight:500">{{ p.titre }}</a><div class="small muted">{{ auteurs(p) }}</div></td>
+            <td class="small">{{ p.type ? typesLib[p.type] : '—' }}</td>
+            <td><app-classement [classement]="p.classement" [facteurImpact]="p.facteurImpact" /></td>
+            <td>@if (p.domaine) { <span class="chip chip-blue">{{ p.domaine.nom }}</span> }</td>
+            <td>{{ p.annee ?? '—' }}</td>
+            <td>
+              <div class="actions">
+                <button class="btn btn-ghost btn-icon" title="Modifier" (click)="ouvrir(p)"><span class="mi sm">edit</span></button>
+                <button class="btn btn-danger btn-icon" title="Supprimer" (click)="supprimer(p)"><span class="mi sm">delete</span></button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="muted" style="text-align:center;padding:40px">Aucune publication.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

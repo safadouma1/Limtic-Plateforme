@@ -1,0 +1,166 @@
+<div class="page-head">
+  <div>
+    <h1 class="page-title">Bonjour {{ auth.currentUser()?.prenom }} 👋</h1>
+    <p class="page-subtitle">Vue d'ensemble de la plateforme du LIMTIC</p>
+  </div>
+  <div class="row">
+    @if (auth.estAdmin()) {
+      <a routerLink="/rapport/rapports" class="btn btn-primary"><span class="mi sm">download</span> Télécharger le rapport</a>
+    } @else if (auth.accesRapport()) {
+      <a routerLink="/rapport/mon-activite" class="btn btn-primary"><span class="mi sm">edit_note</span> Déclarer mon activité</a>
+    }
+    <a routerLink="/ia/chat" class="btn btn-ia"><span class="mi sm">auto_awesome</span> Demander à l'assistant IA</a>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="alert alert-error"><span class="mi sm">error</span> {{ error() }}</div>
+}
+
+<div class="stats-grid">
+  @if (stats(); as s) {
+    <a routerLink="/utilisateur/chercheurs" class="stat-card card-link">
+      <div class="stat-icon si-blue"><span class="mi">groups</span></div>
+      <div class="stat-value">{{ s.totalChercheurs }}</div><div class="stat-label">Chercheurs</div>
+    </a>
+    <a routerLink="/utilisateur/publications" class="stat-card card-link">
+      <div class="stat-icon si-cyan"><span class="mi">article</span></div>
+      <div class="stat-value">{{ s.totalPublications }}</div><div class="stat-label">Publications</div>
+    </a>
+    <a routerLink="/utilisateur/domaines" class="stat-card card-link">
+      <div class="stat-icon si-purple"><span class="mi">category</span></div>
+      <div class="stat-value">{{ s.totalDomaines }}</div><div class="stat-label">Axes de recherche</div>
+    </a>
+    <div class="stat-card">
+      <div class="stat-icon si-gold"><span class="mi">person</span></div>
+      <div class="stat-value">{{ s.totalUtilisateurs }}</div><div class="stat-label">Comptes utilisateurs</div>
+    </div>
+  } @else if (!error()) {
+    @for (i of [1, 2, 3, 4]; track i) { <div class="stat-card skeleton" style="height:122px"></div> }
+  }
+</div>
+
+@if (alertes(); as a) {
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+      <span class="card-title"><span class="mi sm">notifications_active</span> À traiter</span>
+      <span class="chip" [class.chip-green]="!totalAttente() && !a.messagesNonLus">{{ totalAttente() + a.messagesNonLus }} élément(s)</span>
+    </div>
+    <div class="grid-2 card-body" style="gap:18px">
+      <div>
+        <div class="small muted" style="margin-bottom:6px">Validations en attente</div>
+        @for (x of a.enAttente; track x.categorie) {
+          <a [routerLink]="x.lien" class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+            <span>{{ x.libelle }}</span><span class="chip chip-gold">{{ x.nombre }}</span>
+          </a>
+        } @empty { <p class="muted small">Aucune déclaration en attente de validation.</p> }
+        <a routerLink="/admin/messages" class="row" style="justify-content:space-between;padding:6px 0">
+          <span><span class="mi sm">mail</span> Messages de contact non lus</span><span class="chip" [class.chip-gold]="a.messagesNonLus">{{ a.messagesNonLus }}</span>
+        </a>
+      </div>
+      <div>
+        <div class="small muted" style="margin-bottom:6px">Prochains événements (60 jours)</div>
+        @for (e of a.prochainsEvenements; track e.id) {
+          <a [routerLink]="['/evenements', e.id]" target="_blank" class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+            <span>{{ e.titre }}</span><span class="small muted">{{ e.dateDebut | date: 'd MMM y' }}</span>
+          </a>
+        } @empty { <p class="muted small">Aucun événement planifié. <a routerLink="/admin/evenements" style="color:var(--accent)">Ajouter</a></p> }
+        <div class="small muted" style="margin:12px 0 6px">Publications par type</div>
+        <div class="row" style="flex-wrap:wrap;gap:6px">
+          @for (t of parType(); track t.libelle) { <span class="chip">{{ t.libelle }} : {{ t.nombre }}</span> }
+        </div>
+        <div class="small muted" style="margin-top:10px">{{ a.doctorants }} doctorants · {{ a.masteriens }} mastériens · {{ a.evenements }} événements</div>
+      </div>
+    </div>
+  </div>
+}
+
+<div class="grid-main-side">
+  <div class="stack">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Chercheurs les plus actifs</span>
+        <div class="row">
+          <a routerLink="/utilisateur/chercheurs" class="btn btn-ghost btn-sm">Tout voir</a>
+          @if (auth.hasRole(['ADMIN'])) {
+            <a routerLink="/admin/chercheurs/nouveau" class="btn btn-primary btn-sm"><span class="mi sm">add</span> Ajouter</a>
+          }
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Chercheur</th><th>Domaine</th><th>Publications</th></tr></thead>
+          <tbody>
+            @for (c of chercheurs(); track c.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/utilisateur/chercheurs', c.id]" class="r-cell">
+                    <div class="r-avatar">{{ c.prenom.charAt(0) }}{{ c.nom.charAt(0) }}</div>
+                    <div>
+                      <div style="font-weight:500">{{ c.prenom }} {{ c.nom }}</div>
+                      <div class="small muted">{{ c.etablissement }}</div>
+                    </div>
+                  </a>
+                </td>
+                <td>@if (c.domaine) { <span class="chip chip-blue">{{ c.domaine.nom }}</span> }</td>
+                <td>{{ c.nbPublications }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="3" class="muted" style="text-align:center;padding:28px">Aucun chercheur enregistré.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Publications récentes</span>
+        <a routerLink="/utilisateur/publications" class="btn btn-ghost btn-sm">Tout voir</a>
+      </div>
+      @for (p of publications(); track p.id) {
+        <a [routerLink]="['/utilisateur/publications', p.id]" class="pub-line">
+          <div class="pub-year">{{ p.annee ?? '—' }}</div>
+          <div style="min-width:0">
+            <div class="pub-line-title">{{ p.titre }}</div>
+            <div class="small muted">{{ auteurs(p) }}</div>
+          </div>
+          <span class="mi muted">chevron_right</span>
+        </a>
+      } @empty {
+        <div class="empty"><p>Aucune publication.</p></div>
+      }
+    </div>
+  </div>
+
+  <div class="stack">
+    <div class="ia-card">
+      <div class="ia-card-title"><span class="mi sm">auto_awesome</span> Module IA · Google Gemini</div>
+      <div class="ia-card-desc">
+        @if (ia.status()?.geminiConfigure) {
+          Gemini est actif (modèle <code>{{ ia.status()?.modele }}</code>).
+        } @else {
+          Gemini n'est pas configuré : définissez <code>GEMINI_API_KEY</code> côté backend. La recherche fonctionne en mode lexical en attendant.
+        }
+      </div>
+      <div class="ia-feat">Assistant qui connaît vos publications</div>
+      <div class="ia-feat">Recherche sémantique par embeddings</div>
+      <div class="ia-feat">Recommandations de publications similaires</div>
+      <div class="ia-feat">Résumés et mots-clés automatiques</div>
+      <a routerLink="/ia/chat" class="btn btn-ia btn-block mt-8">Explorer le module IA <span class="mi sm">arrow_forward</span></a>
+    </div>
+
+    @if (stats(); as s) {
+      <div class="card card-body">
+        <div class="section-title">Publications par domaine</div>
+        @for (d of s.publicationsParDomaine; track d.nom) {
+          <div class="bar-row">
+            <div class="bar-head"><span>{{ d.nom }}</span><span class="muted">{{ d.count }}</span></div>
+            <div class="bar-track"><div class="bar-fill" [style.width.%]="d.count / maxDomaine() * 100"></div></div>
+          </div>
+        } @empty { <p class="muted small">Pas encore de données.</p> }
+        <a routerLink="/ia/analytics" class="btn btn-ghost btn-sm mt-8">Analyse détaillée</a>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,55 @@
+<div class="auth-page">
+  <div class="auth-card fade-up">
+
+    <a routerLink="/" class="auth-logo logo">
+      <span class="plate-auth"><img src="logos/limtic.png" alt="LIMTIC" height="40" /></span>
+      <h1 class="auth-title">Connexion au LIMTIC</h1>
+      <p class="auth-sub">Plateforme des chercheurs et publications scientifiques</p>
+    </a>
+
+    @if (expire) {
+      <div class="alert alert-warn"><span class="mi sm">schedule</span> Votre session a expiré, reconnectez-vous.</div>
+    }
+    @if (error()) {
+      <div class="alert alert-error" role="alert"><span class="mi sm">error</span> {{ error() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="email">Adresse e-mail</label>
+        <input id="email" class="form-control" type="email" formControlName="email" placeholder="vous@exemple.com" autocomplete="email" />
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <div class="form-error">Adresse e-mail invalide.</div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Mot de passe</label>
+        <div class="pass-wrap">
+          <input id="password" class="form-control" [type]="showPass() ? 'text' : 'password'" formControlName="password"
+                 placeholder="••••••••" autocomplete="current-password" />
+          <button type="button" class="pass-toggle" (click)="showPass.set(!showPass())"
+                  [attr.aria-label]="showPass() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+            <span class="mi sm">{{ showPass() ? 'visibility_off' : 'visibility' }}</span>
+          </button>
+        </div>
+        <div style="text-align:right;margin-top:6px"><a routerLink="/auth/mot-de-passe-oublie" class="small" style="color:var(--accent)">Mot de passe oublié ?</a></div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" [disabled]="loading()">
+        @if (loading()) { <span class="mi sm spin">autorenew</span> Connexion… } @else { Se connecter }
+      </button>
+    </form>
+
+    <div class="demo-box">
+      <strong>Comptes de démonstration</strong> (mot de passe <code>admin123</code>, modifiable via <code>ADMIN_PASSWORD</code>) :<br />
+      <button type="button" (click)="remplirDemo('directeur@limtic.local')">directeur</button> ·
+      <button type="button" (click)="remplirDemo('admin@limtic.local')">admin</button> ·
+      <button type="button" (click)="remplirDemo('chercheur@limtic.local')">chercheur</button> ·
+      <button type="button" (click)="remplirDemo('moderateur@limtic.local')">modérateur</button> ·
+      <button type="button" (click)="remplirDemo('user@limtic.local')">utilisateur</button>
+    </div>
+
+    <p class="auth-foot">Pas encore de compte ? <a routerLink="/auth/register">Créer un compte</a></p>
+  </div>
+</div>

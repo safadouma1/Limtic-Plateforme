@@ -1,0 +1,70 @@
+<div class="page-head">
+  <div>
+    <h1 class="page-title"><span class="spark">✦</span> Assistant IA</h1>
+    <p class="page-subtitle">Questions sur les publications de la plateforme · propulsé par Google Gemini</p>
+  </div>
+  @if (messages().length) {
+    <button class="btn btn-ghost" (click)="nouvelleConversation()"><span class="mi sm">add_comment</span> Nouvelle conversation</button>
+  }
+</div>
+
+<app-ia-status-banner />
+
+<div class="chat-layout">
+  <div class="card chat-card">
+    <div class="card-header">
+      <span class="card-title">Assistant de recherche</span>
+      <span class="badge-ia" [class.off]="!ia.status()?.geminiConfigure"><span class="dot"></span>{{ ia.status()?.modele ?? 'Gemini' }}</span>
+    </div>
+
+    <div #messagesEl class="messages" aria-live="polite">
+      @if (messages().length === 0) {
+        <div class="chat-empty">
+          <div class="chat-empty-icon">✦</div>
+          <p>Demandez-moi de résumer des travaux, de trouver un chercheur ou d'expliquer un concept.</p>
+          <p class="small muted">Je m'appuie sur le catalogue des publications de la plateforme et je le signale quand une information n'y figure pas.</p>
+        </div>
+      }
+      @for (m of messages(); track $index) {
+        <div class="msg" [class.user]="m.role === 'user'">
+          @if (m.role === 'assistant') { <div class="avatar">✦</div> }
+          <div>
+            @if (m.role === 'assistant') {
+              <div class="bubble prose" [class.error]="m.erreur" [innerHTML]="m.content | markdown"></div>
+            } @else {
+              <div class="bubble">{{ m.content }}</div>
+            }
+            <div class="ts">{{ m.ts | date: 'HH:mm' }}</div>
+          </div>
+        </div>
+      }
+      @if (loading()) {
+        <div class="msg"><div class="avatar">✦</div><div class="bubble typing"><i></i><i></i><i></i></div></div>
+      }
+    </div>
+
+    <form class="composer" (ngSubmit)="envoyer()">
+      <input class="form-control" name="message" type="text" [(ngModel)]="userInput" maxlength="4000"
+             placeholder="Posez votre question sur les publications…" autocomplete="off" />
+      <button class="btn btn-primary" type="submit" [disabled]="loading() || !userInput.trim()" aria-label="Envoyer">
+        <span class="mi sm">send</span>
+      </button>
+    </form>
+  </div>
+
+  <div class="stack">
+    <div class="ia-card">
+      <div class="ia-card-title">Suggestions</div>
+      <div class="ia-card-desc">Cliquez pour poser la question</div>
+      @for (s of suggestions; track s) {
+        <button class="suggestion" (click)="suggestion(s)" [disabled]="loading()">{{ s }}</button>
+      }
+    </div>
+    <div class="card card-body small muted">
+      <div style="font-weight:600;color:var(--text);margin-bottom:8px">Bon à savoir</div>
+      <div class="ia-feat">Les réponses sont générées par IA : vérifiez les informations importantes.</div>
+      <div class="ia-feat">L'historique de la conversation est envoyé à Gemini pour garder le contexte.</div>
+      <div class="ia-feat">La conversation n'est pas enregistrée sur le serveur.</div>
+    </div>
+  </div>
+</div>

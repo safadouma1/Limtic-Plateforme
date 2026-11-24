@@ -1,0 +1,92 @@
+.app-shell { display: grid; grid-template-rows: 62px minmax(0, 1fr); height: 100vh; overflow: hidden; }
+
+.topbar {
+  display: flex; align-items: center; gap: 18px;
+  padding: 0 20px;
+  background: rgba(15,22,41,.85); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  z-index: 30;
+}
+.burger { display: none; }
+
+.search-wrap {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--bg-soft); border: 1px solid var(--border);
+  border-radius: 11px; padding: 7px 12px; flex: 1; min-width: 0; max-width: 480px; margin-left: 24px;
+  transition: border-color .15s, box-shadow .15s;
+  &:focus-within { border-color: var(--accent); box-shadow: var(--ring); }
+  .mi { color: var(--accent3); }
+  input { background: none; border: none; outline: none; flex: 1; min-width: 0; font-size: 13px;
+    &::placeholder { color: var(--faint); } }
+  kbd { font-family: inherit; font-size: 11px; color: var(--faint); border: 1px solid var(--border); border-radius: 5px; padding: 0 6px; }
+}
+
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.user-chip {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--grad-brand); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600;
+}
+
+.shell-body { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 0; position: relative; }
+
+.sidebar {
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow-y: auto; padding: 18px 0 0;
+}
+.nav-section { padding: 0 12px; margin-bottom: 18px; }
+.nav-label {
+  font-size: 10.5px; font-weight: 600; letter-spacing: 1.1px; color: var(--faint);
+  text-transform: uppercase; padding: 0 12px; display: block; margin-bottom: 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 9px; margin-bottom: 2px;
+  color: var(--muted); font-size: 13.5px; position: relative;
+  transition: background .15s, color .15s;
+  .mi { font-size: 19px; }
+  &:hover { background: var(--surface2); color: var(--text); }
+  &.active {
+    background: rgba(79,140,255,.12); color: #9cc0ff; font-weight: 500;
+    &::before { content: ''; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px; background: var(--accent); border-radius: 0 3px 3px 0; }
+  }
+}
+.ia-pill {
+  margin-left: auto; font-size: 10px; font-weight: 600; border-radius: 10px; padding: 1px 7px;
+  background: rgba(155,123,255,.14); color: #bba6ff; border: 1px solid rgba(155,123,255,.3);
+}
+.sidebar-footer {
+  margin-top: auto; padding: 14px 20px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 11px; transition: background .15s;
+  &:hover { background: var(--surface2); }
+  .u-avatar {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--grad-brand); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0;
+  }
+  .u-info { min-width: 0; }
+  .u-name { font-size: 13px; font-weight: 500; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .u-role { font-size: 11.5px; color: var(--muted); display: block; }
+}
+
+.main-content { overflow-y: auto; background: var(--bg); }
+.main-inner { padding: 28px 32px 48px; max-width: 1320px; margin: 0 auto; animation: fadeUp .3s ease both; }
+
+.backdrop { display: none; }
+
+@media (max-width: 900px) {
+  .burger { display: inline-flex; }
+  .shell-body { grid-template-columns: minmax(0, 1fr); }
+  .sidebar {
+    position: absolute; inset: 0 auto 0 0; width: 270px; z-index: 25;
+    transform: translateX(-100%); transition: transform .2s ease;
+    &.open { transform: none; box-shadow: 20px 0 40px rgba(0,0,0,.5); }
+  }
+  .backdrop { display: block; position: absolute; inset: 0; background: rgba(0,0,0,.5); z-index: 20; }
+  .search-wrap { margin-left: 0; }
+  .main-inner { padding: 20px 16px 40px; }
+}
+@media (max-width: 640px) {
+  .topbar { gap: 10px; padding: 0 12px; }
+  .logo .logo-text, .hide-sm, .search-wrap kbd { display: none; }
+}
