@@ -106,9 +106,9 @@ Au premier démarrage, le jeu d'essai 2025 du LIMTIC (voir plus bas) et 5 compte
 
 | Email | Rôle | Mot de passe |
 |---|---|---|
-| directeur@limtic.local | Directeur (super-admin), relié à ZAGROUBA Ezzeddine | `admin123` (ou `ADMIN_PASSWORD`) |
+| directeur@limtic.local | Directeur (super-admin), relié à Ezzeddine | `admin123` (ou `ADMIN_PASSWORD`) |
 | admin@limtic.local | Administrateur | idem |
-| chercheur@limtic.local | Chercheur, relié à BARHOUMI Walid | idem |
+| chercheur@limtic.local | Chercheur, relié à  Walid | idem |
 | moderateur@limtic.local | Modérateur | idem |
 | user@limtic.local | Utilisateur | idem |
 
